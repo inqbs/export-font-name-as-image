@@ -6,13 +6,19 @@ const fontkit = require('fontkit')
 import { Font } from 'fontkit'
 import { registerFont, createCanvas } from 'canvas'
 
-const canvas = createCanvas(360, 40)
+const canvasSize = {
+  width: process.env.CANVAS_WIDTH || 360,
+  height: process.env.CANVAS_HEIGHT || 40,
+}
+const canvas = createCanvas(+canvasSize.width, +canvasSize.height)
 
 const makeOutput = (font: Font) => {
   return new Promise(resolve => {
     const ctx = canvas.getContext('2d')
 
-    ctx.font = `24px "${font.familyName}"`
+    const fontSize = process.env.FONT_SIZE || 24
+
+    ctx.font = `${fontSize}px "${font.familyName}"`
     const text = font.fullName
     const textPosition = {
       x: canvas.width / 2,
