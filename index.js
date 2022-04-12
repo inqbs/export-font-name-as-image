@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+require("dotenv/config");
 var fs = require("fs");
 var glob = require("glob");
 var fontkit = require('fontkit');
@@ -45,7 +46,7 @@ var makeOutput = function (font) {
     return new Promise(function (resolve) {
         var ctx = canvas.getContext('2d');
         ctx.font = "24px \"".concat(font.familyName, "\"");
-        var text = font.postscriptName;
+        var text = font.fullName;
         var textPosition = {
             x: canvas.width / 2,
             y: canvas.height / 2
@@ -53,17 +54,18 @@ var makeOutput = function (font) {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(text, textPosition.x, textPosition.y);
-        var out = fs.createWriteStream("".concat(__dirname, "/output/").concat(font.fullName, ".png"));
+        var out = fs.createWriteStream("".concat(__dirname, "/output/").concat(font.postscriptName, ".png"));
         var stream = canvas.createPNGStream();
         stream.pipe(out);
         out.on('finish', function () {
-            console.log("output-over: ".concat(font.familyName, "|").concat(font.fullName));
+            console.log("[output-over] ".concat(font.postscriptName));
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             resolve(true);
         });
     });
 };
 var files = glob.sync('input/*.@(TTF|ttf|OTF|otf)');
+fontkit.setDefaultLanguage(process.env.LANGUAGE);
 (function () { return __awaiter(void 0, void 0, void 0, function () {
     var _i, files_1, file, font;
     return __generator(this, function (_a) {

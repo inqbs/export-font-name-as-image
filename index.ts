@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import * as fs from 'fs';
 import * as glob from 'glob'
 const fontkit = require('fontkit')
@@ -11,7 +13,7 @@ const makeOutput = (font: Font) => {
     const ctx = canvas.getContext('2d')
 
     ctx.font = `24px "${font.familyName}"`
-    const text = font.postscriptName
+    const text = font.fullName
     const textPosition = {
       x: canvas.width / 2,
       y: canvas.height / 2
@@ -20,20 +22,21 @@ const makeOutput = (font: Font) => {
     ctx.textBaseline = "middle";
     ctx.fillText(text, textPosition.x, textPosition.y)
 
-    const out = fs.createWriteStream(`${__dirname}/output/${font.fullName}.png`)
+    const out = fs.createWriteStream(`${__dirname}/output/${font.postscriptName}.png`)
     const stream = canvas.createPNGStream()
     stream.pipe(out)
     out.on('finish', () => {
-      console.log(`output-over: ${font.familyName}|${font.fullName}`)
+      console.log(`[output-over] ${font.postscriptName}`)
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       resolve(true)
     })
   })
 }
 
-const files = glob.sync('input/*.@(TTF|ttf|OTF|otf)');
+const files = glob.sync('input/*.@(TTF|ttf|OTF|otf)')
+fontkit.setDefaultLanguage(process.env.LANGUAGE)
 
-(async () => {
+;(async () => {
   for (const file of files) {
     const font = fontkit.openSync(file)
     registerFont(file, { family: font.familyName })
