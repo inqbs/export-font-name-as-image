@@ -39,13 +39,16 @@ const makeOutput = (font: Font) => {
   })
 }
 
-const files = glob.sync('input/*.@(TTF|ttf|OTF|otf)')
-fontkit.setDefaultLanguage(process.env.LANGUAGE)
+export const exportImages = async () => {
+  const files = glob.sync('input/*.@(TTF|ttf|OTF|otf)')
+  fontkit.setDefaultLanguage(process.env.LANGUAGE)
 
-;(async () => {
   for (const file of files) {
     const font = fontkit.openSync(file)
     registerFont(file, { family: font.familyName })
     await makeOutput(font)
   }
-})()
+}
+
+
+exportImages()
