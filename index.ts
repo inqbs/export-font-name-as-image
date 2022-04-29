@@ -5,12 +5,14 @@ import * as glob from 'glob'
 import { load, Font, LocalizedName } from 'opentype.js'
 import { registerFont, createCanvas } from 'canvas'
 
-const lang = process.env.LANGUAGE
+const {LANGUAGE, CANVAS_WIDTH, CANVAS_HEIGHT, FONT_SIZE, CENTER} = process.env
+
+const lang = LANGUAGE
 const getLangName = (property) => property?.[lang] || property['en']
 
 const canvasSize = {
-  width: process.env.CANVAS_WIDTH || 360,
-  height: process.env.CANVAS_HEIGHT || 40,
+  width: CANVAS_WIDTH || 360,
+  height: CANVAS_HEIGHT || 40,
 }
 const canvas = createCanvas(+canvasSize.width, +canvasSize.height)
 
@@ -45,7 +47,7 @@ const makeOutput = (font: Font, isCenter: boolean) => {
   const {fullName: fullNames, postScriptName: postScriptNames, fontFamily: fontFamilies} = font.names
 
   const fullName = getLangName(fullNames)
-  const fontSize = +(process.env.FONT_SIZE) || 24
+  const fontSize = +(FONT_SIZE) || 24
 
   //  calculate text's width for alignment center
   const text = fullName?.trim() ?? ''
@@ -77,7 +79,7 @@ export const exportImages = async () => {
     const font = await load(file)
 
     registerFont(file, { family: getLangName(font.names.fontFamily) })
-    await makeOutput(font, process.env.CENTER === 'true')
+    await makeOutput(font, CENTER === 'true')
   }
 }
 
