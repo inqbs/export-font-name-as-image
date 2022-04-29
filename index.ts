@@ -2,7 +2,7 @@ import 'dotenv/config'
 
 import * as fs from 'fs';
 import * as glob from 'glob'
-import { load, Font } from 'opentype.js'
+import { load, Font, LocalizedName } from 'opentype.js'
 import { registerFont, createCanvas } from 'canvas'
 
 const lang = process.env.LANGUAGE
@@ -15,23 +15,41 @@ const canvasSize = {
 const canvas = createCanvas(+canvasSize.width, +canvasSize.height)
 
 /**
+ * Calculate text's position
+ * @param ctx 
+ * @param text 
+ * @param fontFamilies 
+ * @param fontSize 
+ * @param isCenter 
+ * @returns 
+ */
+const getTextPosition = (ctx, text:string, fontFamilies: LocalizedName, fontSize: number, isCenter: boolean) => {
+  const fontFamily = getLangName(fontFamilies)
+  ctx.font = `${fontSize}px '${fontFamily}'`
+  const { width } = ctx.measureText(text)
+
+  return {
+    x: isCenter ? (canvas.width - width) / 2 : 0,
+    y: canvas.height - fontSize / 2
+  }
+}
+
+/**
  * Draw and export image of fontname as font.
  * @param font: Font
  * @returns result: Promise<boolean>
  */
-const makeOutput = (font: Font) => {
+const makeOutput = (font: Font, isCenter: boolean) => {
   const ctx = canvas.getContext('2d')
 
-  const {fullName: fullNames, postScriptName: postScriptNames} = font.names
+  const {fullName: fullNames, postScriptName: postScriptNames, fontFamily: fontFamilies} = font.names
 
   const fullName = getLangName(fullNames)
   const fontSize = +(process.env.FONT_SIZE) || 24
 
-  const text = fullName
-  const textPosition = {
-    x: 0,
-    y: canvas.height - fontSize / 2
-  }
+  //  calculate text's width for alignment center
+  const text = fullName?.trim() ?? ''
+  const textPosition = getTextPosition(ctx, text, fontFamilies, fontSize, isCenter)
 
   font.draw(ctx, text, textPosition.x, textPosition.y, fontSize)
 
@@ -59,7 +77,7 @@ export const exportImages = async () => {
     const font = await load(file)
 
     registerFont(file, { family: getLangName(font.names.fontFamily) })
-    await makeOutput(font)
+    await makeOutput(font, process.env.CENTER === 'true')
   }
 }
 
